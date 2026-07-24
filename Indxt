@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>نظام نقاط المشتريات والجوائز</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 12mm 10mm;
+    background-color: #f8fafc;
+  }
+  
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Amiri', 'Traditional Arabic', 'Arial', sans-serif;
+    color: #1e293b;
+    margin: 0;
+    padding: 0;
+    direction: rtl;
+    line-height: 1.5;
+  }
+
+  /* Header Section */
+  .header-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+    color: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    border-right: 6px solid #3b82f6;
+  }
+
+  .header-card h1 {
+    margin: 0 0 6px 0;
+    font-size: 22pt;
+    font-weight: bold;
+    color: #ffffff;
+  }
+
+  .header-card p {
+    margin: 0;
+    font-size: 11pt;
+    color: #93c5fd;
+  }
+
+  /* Intro Info Grid using table */
+  .info-table {
+    width: 100%;
+    margin-bottom: 15px;
+    border-collapse: collapse;
+  }
+
+  .info-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    width: 32%;
+  }
+
+  .info-card .title {
+    font-size: 9.5pt;
+    color: #64748b;
+    margin-bottom: 4px;
+    font-weight: bold;
+  }
+
+  .info-card .value {
+    font-size: 13pt;
+    font-weight: bold;
+    color: #1e3a8a;
+  }
+
+  /* Section Titles */
+  .section-title {
+    font-size: 13pt;
+    font-weight: bold;
+    color: #0f172a;
+    margin: 15px 0 8px 0;
+    padding-right: 8px;
+    border-right: 4px solid #2563eb;
+  }
+
+  /* Main Tables Styling */
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #cbd5e1;
+    font-size: 10pt;
+  }
+
+  table.data-table th {
+    background-color: #1e293b;
+    color: #ffffff;
+    padding: 8px 10px;
+    text-align: right;
+    font-size: 9.5pt;
+    font-weight: bold;
+  }
+
+  table.data-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+  }
+
+  table.data-table tr:nth-child(even) td {
+    background-color: #f8fafc;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 9pt;
+  }
+
+  .badge-primary { background-color: #dbeafe; color: #1e40af; }
+  .badge-success { background-color: #dcfce7; color: #166534; }
+  .badge-gold { background-color: #fef9c3; color: #854d0e; }
+
+  /* Steps & Sharing Section */
+  .instructions-box {
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+  }
+
+  .instructions-box ol {
+    margin: 5px 0 0 0;
+    padding-right: 20px;
+  }
+
+  .instructions-box li {
+    margin-bottom: 6px;
+    font-size: 10pt;
+    color: #334155;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    font-size: 8.5pt;
+    color: #64748b;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 8px;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header-card">
+    <h1>نظام تحفيز المشتريات والجوائز</h1>
+    <p>دليل الكشوفات، حساب النقاط، وسلّم الجوائز التلقائي للمحل والزبائن</p>
+  </div>
+
+  <!-- Quick Info Summary -->
+  <table class="info-table">
+    <tr>
+      <td class="info-card">
+        <div class="title">معادلة النقاط</div>
+        <div class="value">100 د.ل = 1 نقطة</div>
+      </td>
+      <td style="width: 2%;"></td>
+      <td class="info-card">
+        <div class="title">أعلى جائزة حالياً</div>
+        <div class="value">هلتي / ماكينة لحام</div>
+      </td>
+      <td style="width: 2%;"></td>
+      <td class="info-card">
+        <div class="title">طريقة المزامنة</div>
+        <div class="value">تلقائية عبر Google Sheets</div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Rewards Tier Table -->
+  <div class="section-title">1. جدول سلم الجوائز النقاط والمشتريات</div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th style="width: 15%;">عدد النقاط</th>
+        <th style="width: 25%;">إجمالي قيمة الفواتير</th>
+        <th style="width: 40%;">الجائزة المستحقة</th>
+        <th style="width: 20%;">فئة الجائزة</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>50 نقطة</strong></td>
+        <td>5,000 دينار</td>
+        <td>شريط قياس احترافي / طقم مفكّات</td>
+        <td><span class="badge badge-primary">برونزية</span></td>
+      </tr>
+      <tr>
+        <td><strong>100 نقطة</strong></td>
+        <td>10,000 دينار</td>
+        <td>صندوق أدوات احترافي / طقم ريش</td>
+        <td><span class="badge badge-primary">برونزية</span></td>
+      </tr>
+      <tr>
+        <td><strong>200 نقطة</strong></td>
+        <td>20,000 دينار</td>
+        <td>صاروخ تجليخ صغير (Mini Grinder)</td>
+        <td><span class="badge badge-primary">فضية</span></td>
+      </tr>
+      <tr>
+        <td><strong>300 نقطة</strong></td>
+        <td>30,000 دينار</td>
+        <td>دريل شحن عادي</td>
+        <td><span class="badge badge-primary">فضية</span></td>
+      </tr>
+      <tr>
+        <td><strong>500 نقطة</strong></td>
+        <td>50,000 دينار</td>
+        <td><strong>جلخ احترافي (صاروخ كبير)</strong></td>
+        <td><span class="badge badge-success">ذهبية</span></td>
+      </tr>
+      <tr>
+        <td><strong>700 نقطة</strong></td>
+        <td>70,000 دينار</td>
+        <td>دريل همر شحن احترافي</td>
+        <td><span class="badge badge-success">ذهبية</span></td>
+      </tr>
+      <tr>
+        <td><strong>1,000 نقطة</strong></td>
+        <td>100,000 دينار</td>
+        <td><strong>هلتي احترافي (Rotary Hammer)</strong></td>
+        <td><span class="badge badge-gold">ماسية</span></td>
+      </tr>
+      <tr>
+        <td><strong>1,500 نقطة</strong></td>
+        <td>150,000 دينار</td>
+        <td>هلتي ثقيل / مولد كهرباء صغير</td>
+        <td><span class="badge badge-gold">ماسية</span></td>
+      </tr>
+      <tr>
+        <td><strong>2,000 نقطة</strong></td>
+        <td>200,000 دينار</td>
+        <td>طقم معدات شامل (دريل + هلتي + جلخ)</td>
+        <td><span class="badge badge-gold">VIP</span></td>
+      </tr>
+      <tr>
+        <td><strong>3,000 نقطة</strong></td>
+        <td>300,000 دينار</td>
+        <td>ماكينة لحام احترافية + مستلزماتها كاملة</td>
+        <td><span class="badge badge-gold">VIP الكبرى</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Customer Ledger Example -->
+  <div class="section-title">2. نموذج سجل إدخال الفواتير والتجميع (Google Sheets)</div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>رقم الفاتورة</th>
+        <th>اسم الزبون</th>
+        <th>رقم الهاتف</th>
+        <th>قيمة الفاتورة</th>
+        <th>النقاط المكتسبة</th>
+        <th>الجائزة المستحقة حالياً</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>#1001</td>
+        <td>أحمد علي</td>
+        <td>0910000000</td>
+        <td>25,000 د.ل</td>
+        <td>250 نقطة</td>
+        <td><span class="badge badge-primary">صاروخ صغير</span></td>
+      </tr>
+      <tr>
+        <td>#1002</td>
+        <td>محمد عمر</td>
+        <td>0920000000</td>
+        <td>50,000 د.ل</td>
+        <td>500 نقطة</td>
+        <td><span class="badge badge-success">جلخ كبير</span></td>
+      </tr>
+      <tr>
+        <td>#1003</td>
+        <td>خالد محمود</td>
+        <td>0940000000</td>
+        <td>100,000 د.ل</td>
+        <td>1,000 نقطة</td>
+        <td><span class="badge badge-gold">هلتي احترافي</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- How to Link Steps -->
+  <div class="section-title">3. طريقة ربط الملف بين هاتفك وهاتف الزبون</div>
+  <div class="instructions-box">
+    <ol>
+      <li><strong>إنشاء جدول البيانات:</strong> قم بإنشاء جدول في Google Sheets يحتوي على ورقتين (سجل الفواتير، ملخص الزبائن).</li>
+      <li><strong>تطبيق المعادلات:</strong> حساب النقاط تلقائياً باستخدام دالة <code>=INT(قيمة الفاتورة / 100)</code>.</li>
+      <li><strong>تجميع حساب الزبون:</strong> استخدام دالة <code>=SUMIF</code> لربط اسم ورقم هاتف الزبون بالفواتير الصادرة باسمه.</li>
+      <li><strong>مشاركة الرابط (العرض فقط):</strong> اضغط على مشاركة (Share) ➔ اجعل الصلاحية "أي شخص لديه الرابط" (Anyone with the link) بصلاحية <strong>عارض (Viewer)</strong> فقط.</li>
+      <li><strong>إرسال الرابط للزبون:</strong> أرسل الرابط عبر الواتساب. يتم تحديث النقاط والجائزة لدى الزبون فور تسجيل أي فاتورة جديدة من هاتفك.</li>
+    </ol>
+  </div>
+
+  <div class="footer">
+    نظام إدارة النقاط والجوائز للمشتريات &bull; تم إعداده للعرض المباشر والطباعة PDF
+  </div>
+
+</body>
+</html>
