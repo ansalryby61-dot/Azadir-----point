@@ -148,7 +148,7 @@
       <input type="tel" id="search-phone" placeholder="09XXXXXXXX">
     </div>
     <button class="btn" id="search-btn" onclick="searchCustomer()">بحث عن الحساب</button>
-    <div id="status-msg" class="loading hidden">جاري البحث في القاعدة... ⏳</div>
+    <div id="status-msg" class="loading hidden">جاري الاتصال بالسحابة... ⏳</div>
 
     <div id="customer-result" class="hidden">
       <div class="card">
@@ -199,10 +199,8 @@
 </div>
 
 <script>
-  // رابط قاعدة بيانات سحابية جاهزة ومجانية لربط الهاتفين بنفس الرابط تلقائياً
-  const BIN_ID = '673a5a40ad19ca34f8cc8b9f'; 
-  const API_KEY = '$2a$10$R78O1/r74h4V8C.z8A9WteL0I.K9P2J1a5S5yD7e0N.hO/a98tLre'; 
-  const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+  // قاعدة بيانات مفتوحة ومجانية فورية خاصة بشركة أزادير بدون تسجيل حساب
+  const DB_URL = "https://api.myjson.online/v1/records/a84c49d6-azadir-store-db";
 
   let currentActivePhone = "";
 
@@ -247,29 +245,35 @@
     return "لا توجد جائزة حالياً (تستحق عند الوصول لمشتريات بقيمة 500 دينار)";
   }
 
-  // جلب الفواتير أونلاين
-  async function fetchInvoicesOnline() {
+  // تنظيف رقم الهاتف من المسافات
+  function cleanPhone(p) {
+    return p.toString().replace(/\D/g, '').trim();
+  }
+
+  // جلب الفواتير
+  async function fetchInvoices() {
     try {
-      const res = await fetch(API_URL + '/latest', {
-        headers: { 'X-Master-Key': API_KEY }
-      });
+      const res = await fetch(DB_URL);
+      if (!res.ok) return [];
       const data = await res.json();
-      return data.record || [];
+      return data.data || [];
     } catch (e) {
       return [];
     }
   }
 
-  // حفظ الفواتير أونلاين
-  async function updateInvoicesOnline(invoices) {
-    await fetch(API_URL, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': API_KEY
-      },
-      body: JSON.stringify(invoices)
-    });
+  // حفظ الفواتير
+  async function saveInvoicesOnline(invoices) {
+    try {
+      await fetch(DB_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: invoices })
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   // إضافة فاتورة جديدة
@@ -281,11 +285,11 @@
 
     const docId = document.getElementById('doc-id').value.trim();
     const name = document.getElementById('cust-name').value.trim();
-    const phone = document.getElementById('cust-phone').value.trim();
+    const phone = cleanPhone(document.getElementById('cust-phone').value);
     const amount = Number(document.getElementById('inv-amount').value);
     const points = Math.floor(amount / 100);
 
-    const invoices = await fetchInvoicesOnline();
+    let invoices = await fetchInvoices();
 
     if (invoices.some(inv => inv.docId === docId)) {
       alert("❌ خطأ: رقم مستند الفاتورة هذا مسجل سابقاً!");
@@ -295,17 +299,23 @@
     }
 
     invoices.push({ docId, name, phone, amount, points });
-    await updateInvoicesOnline(invoices);
+    const success = await saveInvoicesOnline(invoices);
 
-    alert("✅ تم حفظ الفاتورة بنجاح أونلاين! أصبحت متاحة للزبون الآن.");
-    document.getElementById('invoice-form').reset();
+    if (success) {
+      alert("✅ تم حفظ الفاتورة بنجاح! أصبحت متاحة للزبون الآن.");
+      document.getElementById('invoice-form').reset();
+    } else {
+      alert("❌ حدث خطأ في الاتصال بالسحابة، يرجى المحاولة مجدداً.");
+    }
+
     btn.innerText = "حفظ الفاتورة أونلاين";
     btn.disabled = false;
   }
 
   // بحث الزبون
   async function searchCustomer() {
-    const phone = document.getElementById('search-phone').value.trim();
+    const rawPhone = document.getElementById('search-phone').value;
+    const phone = cleanPhone(rawPhone);
     if (!phone) { alert("يرجى إدخال رقم الهاتف."); return; }
 
     const statusMsg = document.getElementById('status-msg');
@@ -315,8 +325,8 @@
     searchBtn.disabled = true;
 
     currentActivePhone = phone;
-    const invoices = await fetchInvoicesOnline();
-    const userInvoices = invoices.filter(inv => inv.phone === phone);
+    const invoices = await fetchInvoices();
+    const userInvoices = invoices.filter(inv => cleanPhone(inv.phone) === phone);
 
     statusMsg.classList.add('hidden');
     searchBtn.disabled = false;
@@ -347,10 +357,10 @@
   // تصفير النقاط عند تسليم الجائزة
   async function claimPrize() {
     if (!currentActivePhone) return;
-    if (confirm("هل أنت تأكد من تسليم الجائزة؟ سيتم تصفير النقاط وسجل الفواتير أونلاين.")) {
-      const invoices = await fetchInvoicesOnline();
-      const updatedInvoices = invoices.filter(inv => inv.phone !== currentActivePhone);
-      await updateInvoicesOnline(updatedInvoices);
+    if (confirm("هل أنت تأكد من تسليم الجائزة؟ سيتم حذف سجل الفواتير وتصفير النقاط.")) {
+      let invoices = await fetchInvoices();
+      const updatedInvoices = invoices.filter(inv => cleanPhone(inv.phone) !== currentActivePhone);
+      await saveInvoicesOnline(updatedInvoices);
 
       alert("🎉 تم سحب الجائزة وتصفير النقاط بنجاح!");
       document.getElementById('customer-result').classList.add('hidden');
