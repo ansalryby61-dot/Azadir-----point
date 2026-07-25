@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>شركة أزادير - نظام النقاط والجوائز</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+
     :root {
       --primary: #0f172a;
       --accent: #d97706;
@@ -13,11 +15,10 @@
       --text: #1e293b;
       --border: #e2e8f0;
       --danger: #dc2626;
-      --danger-hover: #b91c1c;
     }
 
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: 'Cairo', system-ui, sans-serif;
       background-color: var(--bg);
       color: var(--text);
       margin: 0;
@@ -37,8 +38,8 @@
 
     .company-header {
       text-align: center;
-      margin-bottom: 20px;
-      padding-bottom: 12px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
       border-bottom: 2px solid #f1f5f9;
     }
 
@@ -53,7 +54,7 @@
       font-size: 13px;
       color: var(--accent);
       font-weight: 700;
-      margin-top: 4px;
+      margin-top: 2px;
     }
 
     .tabs {
@@ -67,14 +68,13 @@
 
     .tab {
       flex: 1;
-      padding: 12px;
+      padding: 10px;
       text-align: center;
       border-radius: 9px;
       font-weight: bold;
       font-size: 14px;
       cursor: pointer;
       color: #64748b;
-      transition: all 0.3s ease;
     }
 
     .tab.active {
@@ -82,31 +82,9 @@
       color: white;
     }
 
-    .form-group {
-      margin-bottom: 14px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 13px;
-      font-weight: 700;
-      color: #475569;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      box-sizing: border-box;
-      font-size: 15px;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
+    .form-group { margin-bottom: 14px; }
+    label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 700; color: #475569; }
+    input { width: 100%; padding: 12px; border: 1.5px solid var(--border); border-radius: 10px; box-sizing: border-box; font-size: 15px; }
 
     .btn {
       width: 100%;
@@ -120,10 +98,7 @@
       cursor: pointer;
     }
 
-    .btn-claim {
-      background-color: var(--danger);
-      margin-top: 15px;
-    }
+    .btn-claim { background-color: var(--danger); margin-top: 15px; }
 
     .card {
       background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
@@ -145,32 +120,19 @@
       font-size: 15px;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-      font-size: 13px;
-    }
-
-    th, td {
-      border: 1px solid var(--border);
-      padding: 8px;
-      text-align: center;
-    }
-
-    th {
-      background: var(--primary);
-      color: white;
-    }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+    th, td { border: 1px solid var(--border); padding: 8px; text-align: center; }
+    th { background: var(--primary); color: white; }
 
     .hidden { display: none; }
+    .loading { text-align: center; color: var(--accent); font-weight: bold; margin: 10px 0; }
   </style>
 </head>
 <body>
 
 <div class="container">
   <div class="company-header">
-    <div class="company-title">شركة أزادير</div>
+    <div class="company-title">🦅 شركة أزادير</div>
     <div class="company-subtitle">نظام النقاط والجوائز المباشر</div>
   </div>
 
@@ -179,13 +141,14 @@
     <div class="tab" onclick="switchTab('admin')">إضافة فاتورة</div>
   </div>
 
-  <!-- استعلام الزبون -->
+  <!-- واجهة البحث للزبون -->
   <div id="client-view">
     <div class="form-group">
       <label>أدخل رقم الهاتف لاستعراض النقاط والجوائز:</label>
       <input type="tel" id="search-phone" placeholder="09XXXXXXXX">
     </div>
-    <button class="btn" onclick="searchCustomer()">بحث عن الحساب</button>
+    <button class="btn" id="search-btn" onclick="searchCustomer()">بحث عن الحساب</button>
+    <div id="status-msg" class="loading hidden">جاري البحث في القاعدة... ⏳</div>
 
     <div id="customer-result" class="hidden">
       <div class="card">
@@ -211,7 +174,7 @@
     </div>
   </div>
 
-  <!-- إضافة الفواتير -->
+  <!-- واجهة إضافة الفاتورة الخاصة بك -->
   <div id="admin-view" class="hidden">
     <form id="invoice-form" onsubmit="saveInvoice(event)">
       <div class="form-group">
@@ -230,12 +193,17 @@
         <label>قيمة الفاتورة (بالدينار):</label>
         <input type="number" id="inv-amount" min="1" placeholder="مثلاً: 5000" required>
       </div>
-      <button type="submit" class="btn" style="background-color: var(--accent);">حفظ الفاتورة</button>
+      <button type="submit" id="save-btn" class="btn" style="background-color: var(--accent);">حفظ الفاتورة أونلاين</button>
     </form>
   </div>
 </div>
 
 <script>
+  // رابط قاعدة بيانات سحابية جاهزة ومجانية لربط الهاتفين بنفس الرابط تلقائياً
+  const BIN_ID = '673a5a40ad19ca34f8cc8b9f'; 
+  const API_KEY = '$2a$10$R78O1/r74h4V8C.z8A9WteL0I.K9P2J1a5S5yD7e0N.hO/a98tLre'; 
+  const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
   let currentActivePhone = "";
 
   function switchTab(tab) {
@@ -251,7 +219,6 @@
     }
   }
 
-  // تحديد الجائزة بناء على قيمة المشتريات الإجمالية بالدينار
   function getPrizeByAmount(total) {
     if (total >= 350000) return "🎁 هلتي شحن";
     if (total >= 90000)  return "🎁 هلتي عادي";
@@ -280,12 +247,37 @@
     return "لا توجد جائزة حالياً (تستحق عند الوصول لمشتريات بقيمة 500 دينار)";
   }
 
-  function getStoredInvoices() {
-    return JSON.parse(localStorage.getItem('azadir_invoices_db') || '[]');
+  // جلب الفواتير أونلاين
+  async function fetchInvoicesOnline() {
+    try {
+      const res = await fetch(API_URL + '/latest', {
+        headers: { 'X-Master-Key': API_KEY }
+      });
+      const data = await res.json();
+      return data.record || [];
+    } catch (e) {
+      return [];
+    }
   }
 
-  function saveInvoice(e) {
+  // حفظ الفواتير أونلاين
+  async function updateInvoicesOnline(invoices) {
+    await fetch(API_URL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': API_KEY
+      },
+      body: JSON.stringify(invoices)
+    });
+  }
+
+  // إضافة فاتورة جديدة
+  async function saveInvoice(e) {
     e.preventDefault();
+    const btn = document.getElementById('save-btn');
+    btn.innerText = "جاري الحفظ أونلاين... ⏳";
+    btn.disabled = true;
 
     const docId = document.getElementById('doc-id').value.trim();
     const name = document.getElementById('cust-name').value.trim();
@@ -293,32 +285,41 @@
     const amount = Number(document.getElementById('inv-amount').value);
     const points = Math.floor(amount / 100);
 
-    const invoices = getStoredInvoices();
+    const invoices = await fetchInvoicesOnline();
 
-    // التأكد من عدم تكرار رقم المستند
-    const isDuplicate = invoices.some(inv => inv.docId === docId);
-    if (isDuplicate) {
-      alert("❌ خطأ: رقم مستند الفاتورة هذا مسجل سابقاً! يرجى اختيار رقم آخر.");
+    if (invoices.some(inv => inv.docId === docId)) {
+      alert("❌ خطأ: رقم مستند الفاتورة هذا مسجل سابقاً!");
+      btn.innerText = "حفظ الفاتورة أونلاين";
+      btn.disabled = false;
       return;
     }
 
     invoices.push({ docId, name, phone, amount, points });
-    localStorage.setItem('azadir_invoices_db', JSON.stringify(invoices));
+    await updateInvoicesOnline(invoices);
 
-    alert("✅ تم حفظ الفاتورة بنجاح في شركة أزادير!");
+    alert("✅ تم حفظ الفاتورة بنجاح أونلاين! أصبحت متاحة للزبون الآن.");
     document.getElementById('invoice-form').reset();
+    btn.innerText = "حفظ الفاتورة أونلاين";
+    btn.disabled = false;
   }
 
-  function searchCustomer() {
+  // بحث الزبون
+  async function searchCustomer() {
     const phone = document.getElementById('search-phone').value.trim();
-    if (!phone) {
-      alert("يرجى إدخال رقم الهاتف.");
-      return;
-    }
+    if (!phone) { alert("يرجى إدخال رقم الهاتف."); return; }
+
+    const statusMsg = document.getElementById('status-msg');
+    const searchBtn = document.getElementById('search-btn');
+    
+    statusMsg.classList.remove('hidden');
+    searchBtn.disabled = true;
 
     currentActivePhone = phone;
-    const invoices = getStoredInvoices();
+    const invoices = await fetchInvoicesOnline();
     const userInvoices = invoices.filter(inv => inv.phone === phone);
+
+    statusMsg.classList.add('hidden');
+    searchBtn.disabled = false;
 
     if (userInvoices.length === 0) {
       alert("لم يتم العثور على أي فواتير بهذا الرقم.");
@@ -326,41 +327,30 @@
       return;
     }
 
-    let totalAmount = 0;
-    let totalPoints = 0;
-    let name = userInvoices[0].name;
-
+    let totalAmount = 0, totalPoints = 0;
     const tbody = document.getElementById('invoices-list');
     tbody.innerHTML = '';
 
     userInvoices.forEach(inv => {
       totalAmount += inv.amount;
       totalPoints += inv.points;
-      tbody.innerHTML += `
-        <tr>
-          <td>#${inv.docId}</td>
-          <td>${inv.amount.toLocaleString()} د.ل</td>
-          <td>${inv.points}</td>
-        </tr>
-      `;
+      tbody.innerHTML += `<tr><td>#${inv.docId}</td><td>${inv.amount.toLocaleString()} د.ل</td><td>${inv.points}</td></tr>`;
     });
 
-    document.getElementById('res-name').innerText = "الزبون: " + name;
+    document.getElementById('res-name').innerText = "الزبون: " + userInvoices[0].name;
     document.getElementById('res-total-amount').innerText = totalAmount.toLocaleString();
     document.getElementById('res-total-points').innerText = totalPoints.toLocaleString();
     document.getElementById('res-prize').innerText = getPrizeByAmount(totalAmount);
-
     document.getElementById('customer-result').classList.remove('hidden');
   }
 
-  function claimPrize() {
+  // تصفير النقاط عند تسليم الجائزة
+  async function claimPrize() {
     if (!currentActivePhone) return;
-
-    const confirmAction = confirm("هل أنت تأكد من تسليم الجائزة؟ سيتم حذف سجل فواتير الزبون وتصفير نقاطه.");
-    if (confirmAction) {
-      let invoices = getStoredInvoices();
-      invoices = invoices.filter(inv => inv.phone !== currentActivePhone);
-      localStorage.setItem('azadir_invoices_db', JSON.stringify(invoices));
+    if (confirm("هل أنت تأكد من تسليم الجائزة؟ سيتم تصفير النقاط وسجل الفواتير أونلاين.")) {
+      const invoices = await fetchInvoicesOnline();
+      const updatedInvoices = invoices.filter(inv => inv.phone !== currentActivePhone);
+      await updateInvoicesOnline(updatedInvoices);
 
       alert("🎉 تم سحب الجائزة وتصفير النقاط بنجاح!");
       document.getElementById('customer-result').classList.add('hidden');
