@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>نظام النقاط والجوائز للمشتريات</title>
+  <title>نظام النقاط والجوائز</title>
   <style>
     :root {
-      --primary: #0f172a;
+      --primary: #1e3a8a;
       --accent: #2563eb;
       --bg: #f8fafc;
       --card-bg: #ffffff;
-      --text: #1e293b;
+      --text: #0f172a;
       --border: #cbd5e1;
     }
 
@@ -19,7 +19,7 @@
       background-color: var(--bg);
       color: var(--text);
       margin: 0;
-      padding: 12px;
+      padding: 15px;
       direction: rtl;
     }
 
@@ -29,20 +29,14 @@
       background: var(--card-bg);
       padding: 20px;
       border-radius: 16px;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
-    .header {
+    h2 {
       text-align: center;
-      margin-bottom: 20px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #e2e8f0;
-    }
-
-    .header h2 {
-      margin: 0;
       color: var(--primary);
-      font-size: 20px;
+      margin-top: 0;
+      margin-bottom: 20px;
     }
 
     .tabs {
@@ -55,12 +49,11 @@
       flex: 1;
       padding: 12px;
       text-align: center;
-      background: #f1f5f9;
+      background: #e2e8f0;
       border-radius: 8px;
       font-weight: bold;
       cursor: pointer;
-      color: #64748b;
-      transition: all 0.2s;
+      color: #475569;
     }
 
     .tab.active {
@@ -69,12 +62,12 @@
     }
 
     .form-group {
-      margin-bottom: 14px;
+      margin-bottom: 15px;
     }
 
     label {
       display: block;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
       font-weight: bold;
       font-size: 14px;
     }
@@ -86,11 +79,6 @@
       border-radius: 8px;
       box-sizing: border-box;
       font-size: 15px;
-      outline: none;
-    }
-
-    input:focus {
-      border-color: var(--accent);
     }
 
     button {
@@ -105,16 +93,12 @@
       cursor: pointer;
     }
 
-    button:disabled {
-      background-color: #94a3b8;
-    }
-
     .result-card {
       background: #eff6ff;
       border: 1px solid #bfdbfe;
-      padding: 16px;
-      border-radius: 12px;
-      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 15px;
     }
 
     .prize-box {
@@ -147,48 +131,38 @@
     }
 
     .hidden { display: none; }
-    .loader {
-      text-align: center;
-      padding: 10px;
-      color: var(--accent);
-      font-weight: bold;
-    }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <div class="header">
-    <h2>نظام الفواتير والجوائز</h2>
-  </div>
+  <h2>نظام الفواتير والجوائز</h2>
 
   <div class="tabs">
-    <div class="tab active" onclick="showTab('client')">استعلام زبون</div>
-    <div class="tab" onclick="showTab('admin')">إضافة فاتورة</div>
+    <div class="tab active" onclick="switchTab('client')">استعلام زبون</div>
+    <div class="tab" onclick="switchTab('admin')">إضافة فاتورة</div>
   </div>
 
-  <!-- لوحة استعلام الزبون -->
-  <div id="client-view">
+  <!-- قسم استعلام الزبون -->
+  <div id="client-section">
     <div class="form-group">
-      <label>أدخل رقم الهاتف لتفقد النقاط والجوائز:</label>
-      <input type="tel" id="search-phone" placeholder="09XXXXXXXX" dir="ltr" style="text-align:right">
+      <label>أدخل رقم الهاتف للبحث:</label>
+      <input type="tel" id="search-phone" placeholder="09XXXXXXXX">
     </div>
-    <button onclick="searchCustomer()" id="search-btn">بحث عن الحساب</button>
+    <button onclick="searchCustomer()">بحث عن الحساب</button>
 
-    <div id="loading-msg" class="loader hidden">جاري البحث عن الفواتير...</div>
-
-    <div id="client-result" class="hidden">
+    <div id="customer-result" class="hidden">
       <div class="result-card">
         <h3 id="res-name" style="margin:0 0 10px 0; color:#1e3a8a"></h3>
         <div>مجموع المشتريات: <strong id="res-total-amount">0</strong> د.ل</div>
         <div>إجمالي النقاط: <strong id="res-total-points">0</strong> نقطة</div>
         <div class="prize-box">
           الجائزة المستحقة:<br>
-          <span id="res-prize" style="font-size:16px;">-</span>
+          <span id="res-prize">-</span>
         </div>
       </div>
 
-      <h4 style="margin-top:15px; margin-bottom:8px">كشف الفواتير المسجلة:</h4>
+      <h4 style="margin-top:15px; margin-bottom:8px">سجل الفواتير:</h4>
       <table>
         <thead>
           <tr>
@@ -202,16 +176,16 @@
     </div>
   </div>
 
-  <!-- لوحة إضافة فاتورة (خاصة بك) -->
-  <div id="admin-view" class="hidden">
-    <form id="invoice-form" onsubmit="saveInvoice(e)">
+  <!-- قسم إضافة فاتورة (لك) -->
+  <div id="admin-section" class="hidden">
+    <form onsubmit="saveInvoice(event)">
       <div class="form-group">
         <label>رقم مستند الفاتورة:</label>
         <input type="text" id="doc-id" placeholder="مثلاً: 1001" required>
       </div>
       <div class="form-group">
         <label>اسم الزبون:</label>
-        <input type="text" id="cust-name" placeholder="اسم الزبون الثلاثي" required>
+        <input type="text" id="cust-name" placeholder="اسم الزبون" required>
       </div>
       <div class="form-group">
         <label>رقم الهاتف:</label>
@@ -219,91 +193,69 @@
       </div>
       <div class="form-group">
         <label>قيمة الفاتورة (بالدينار):</label>
-        <input type="number" id="inv-amount" min="1" placeholder="مثلاً: 50000" required>
+        <input type="number" id="inv-amount" min="1" placeholder="مثلاً: 5000" required>
       </div>
-      <button type="submit" id="save-btn">حفظ وتحديث النقاط فوراً</button>
+      <button type="submit">حفظ الفاتورة وتحديث النقاط</button>
     </form>
   </div>
 </div>
 
 <script>
-  // رابط قاعدة بيانات سحابية مجانية وسريعة جاهزة للاستخدام مباشر
-  const API_URL = "https://jsonbin.org/add-points-db/data";
-  const SECRET_KEY = "token 1c8a16db-7925-47e3-9978-831fb355a16d";
-
-  function showTab(tab) {
+  function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     if(tab === 'client') {
       document.querySelectorAll('.tab')[0].classList.add('active');
-      document.getElementById('client-view').classList.remove('hidden');
-      document.getElementById('admin-view').classList.add('hidden');
+      document.getElementById('client-section').classList.remove('hidden');
+      document.getElementById('admin-section').classList.add('hidden');
     } else {
       document.querySelectorAll('.tab')[1].classList.add('active');
-      document.getElementById('admin-view').classList.remove('hidden');
-      document.getElementById('client-view').classList.add('hidden');
+      document.getElementById('admin-section').classList.remove('hidden');
+      document.getElementById('client-section').classList.add('hidden');
     }
   }
 
-  function calculatePrize(points) {
-    if (points >= 3000) return "🎁 ماكينة لحام احترافية + ملحقاتها كاملة";
+  function getPrize(points) {
+    if (points >= 3000) return "🎁 ماكينة لحام احترافية + ملحقاتها";
     if (points >= 2000) return "🎁 طقم معدات كامل (دريل + هلتي + جلخ)";
-    if (points >= 1500) return "🎁 هلتي ثقيل / مولد كهرباء صغير";
+    if (points >= 1500) return "🎁 هلتي ثقيل / مولد كهرباء";
     if (points >= 1000) return "🎁 هلتي احترافي (Rotary Hammer)";
     if (points >= 700) return "🎁 دريل همر شحن احترافي";
     if (points >= 500) return "🎁 جلخ احترافي (صاروخ كبير)";
     if (points >= 300) return "🎁 دريل شحن عادي";
-    if (points >= 200) return "🎁 صاروخ تجليخ صغير (Mini Grinder)";
-    if (points >= 100) return "🎁 صندوق أدوات احترافي / طقم ريش";
-    if (points >= 50) return "🎁 طقم مفكّات / شريط قياس احترافي";
-    return "لا توجد جائزة حالياً (تستحق أول جائزة عند 50 نقطة)";
+    if (points >= 200) return "🎁 صاروخ تجليخ صغير";
+    if (points >= 100) return "🎁 صندوق أدوات احترافي";
+    if (points >= 50) return "🎁 طقم مفكّات / شريط قياس";
+    return "لا توجد جائزة حالياً (تستحق عند 50 نقطة)";
   }
 
-  // التخزين باستخدام LocalStorage كنسخة سريعة مع الدعم السحابي
-  function getLocalData() {
-    return JSON.parse(localStorage.getItem('invoices_db') || '[]');
-  }
-
-  function saveLocalData(data) {
-    localStorage.setItem('invoices_db', JSON.stringify(data));
-  }
-
-  async function saveInvoice(e) {
+  function saveInvoice(e) {
     e.preventDefault();
-    const btn = document.getElementById('save-btn');
-    btn.innerText = "جاري الحفظ...";
-    btn.disabled = true;
-
     const docId = document.getElementById('doc-id').value.trim();
     const name = document.getElementById('cust-name').value.trim();
     const phone = document.getElementById('cust-phone').value.trim();
     const amount = Number(document.getElementById('inv-amount').value);
     const points = Math.floor(amount / 100);
 
-    const newInvoice = { docId, name, phone, amount, points, date: new Date().toLocaleDateString('ar-LY') };
+    const newInvoice = { docId, name, phone, amount, points };
 
-    let currentDB = getLocalData();
-    currentDB.push(newInvoice);
-    saveLocalData(currentDB);
+    let db = JSON.parse(localStorage.getItem('my_invoices_db') || '[]');
+    db.push(newInvoice);
+    localStorage.setItem('my_invoices_db', JSON.stringify(db));
 
-    alert(`تم حفظ الفاتورة بنجاح!\nالنقاط المكتسبة لهذه الفاتورة: ${points} نقطة.`);
-    document.getElementById('invoice-form').reset();
-    btn.innerText = "حفظ وتحديث النقاط فوراً";
-    btn.disabled = false;
+    alert("تم حفظ الفاتورة بنجاح! النقاط المكتسبة: " + points);
+    e.target.reset();
   }
 
   function searchCustomer() {
     const phone = document.getElementById('search-phone').value.trim();
-    if(!phone) {
-      alert("الرجاء إدخال رقم الهاتف للبحث.");
-      return;
-    }
+    if(!phone) return alert("يرجى إدخال رقم الهاتف.");
 
-    const allInvoices = getLocalData();
-    const userInvoices = allInvoices.filter(inv => inv.phone === phone);
+    let db = JSON.parse(localStorage.getItem('my_invoices_db') || '[]');
+    let userInvoices = db.filter(inv => inv.phone === phone);
 
     if(userInvoices.length === 0) {
       alert("لم يتم العثور على أي فواتير مسجلة بهذا الرقم.");
-      document.getElementById('client-result').classList.add('hidden');
+      document.getElementById('customer-result').classList.add('hidden');
       return;
     }
 
@@ -329,9 +281,9 @@
     document.getElementById('res-name').innerText = "الزبون: " + name;
     document.getElementById('res-total-amount').innerText = totalAmount.toLocaleString();
     document.getElementById('res-total-points').innerText = totalPoints.toLocaleString();
-    document.getElementById('res-prize').innerText = calculatePrize(totalPoints);
+    document.getElementById('res-prize').innerText = getPrize(totalPoints);
 
-    document.getElementById('client-result').classList.remove('hidden');
+    document.getElementById('customer-result').classList.remove('hidden');
   }
 </script>
 
