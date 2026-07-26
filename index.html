@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>شركة أزادير - نظام النقاط والجوائز</title>
+  
+  <!-- مكتبات Google Firebase الرسمية -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 
@@ -199,8 +204,18 @@
 </div>
 
 <script>
-  // رابط خدمة سحابية تعتمد على Google Apps Script
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_AzadirRewards_AppScript/exec";
+  // بيانات تطبيق azadir-rewards المربوط بالحساب
+  const firebaseConfig = {
+    apiKey: "AIzaSyC9hoRJY1Fa3J...", // سيتم الربط التلقائي فور تغيير Rules
+    authDomain: "azadir-rewards.firebaseapp.com",
+    projectId: "azadir-rewards",
+    storageBucket: "azadir-rewards.appspot.com",
+    messagingSenderId: "777200349344",
+    appId: "1:777200349344:web:62bcb56eef1da1b2a0d9c5"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
   let currentActivePhone = "";
 
@@ -249,15 +264,6 @@
     return p.toString().replace(/\D/g, '').trim();
   }
 
-  // التخزين المحلي الاحتياطي المضمون 100%
-  function getLocalInvoices() {
-    return JSON.parse(localStorage.getItem('azadir_invoices') || '[]');
-  }
-
-  function saveLocalInvoices(data) {
-    localStorage.setItem('azadir_invoices', JSON.stringify(data));
-  }
-
   async function saveInvoice(e) {
     e.preventDefault();
     const btn = document.getElementById('save-btn');
@@ -270,20 +276,24 @@
     const amount = Number(document.getElementById('inv-amount').value);
     const points = Math.floor(amount / 100);
 
-    let invoices = getLocalInvoices();
+    try {
+      const checkDoc = await db.collection("invoices").doc(docId).get();
+      if (checkDoc.exists) {
+        alert("❌ خطأ: رقم مستند الفاتورة هذا مسجل سابقاً!");
+        btn.innerText = "حفظ الفاتورة أونلاين";
+        btn.disabled = false;
+        return;
+      }
 
-    if (invoices.some(inv => inv.docId === docId)) {
-      alert("❌ خطأ: رقم مستند الفاتورة هذا مسجل سابقاً!");
-      btn.innerText = "حفظ الفاتورة أونلاين";
-      btn.disabled = false;
-      return;
+      await db.collection("invoices").doc(docId).set({
+        docId, name, phone, amount, points, createdAt: new Date()
+      });
+
+      alert("✅ تم حفظ الفاتورة أونلاين بنجاح!");
+      document.getElementById('invoice-form').reset();
+    } catch (err) {
+      alert("❌ حدث خطأ: " + err.message);
     }
-
-    invoices.push({ docId, name, phone, amount, points });
-    saveLocalInvoices(invoices);
-
-    alert("✅ تم حفظ الفاتورة بنجاح!");
-    document.getElementById('invoice-form').reset();
 
     btn.innerText = "حفظ الفاتورة أونلاين";
     btn.disabled = false;
@@ -301,41 +311,51 @@
     searchBtn.disabled = true;
 
     currentActivePhone = phone;
-    const invoices = getLocalInvoices();
-    const userInvoices = invoices.filter(inv => cleanPhone(inv.phone) === phone);
 
-    statusMsg.classList.add('hidden');
-    searchBtn.disabled = false;
+    try {
+      const snapshot = await db.collection("invoices").where("phone", "==", phone).get();
 
-    if (userInvoices.length === 0) {
-      alert("لم يتم العثور على أي فواتير بهذا الرقم.");
-      document.getElementById('customer-result').classList.add('hidden');
-      return;
+      statusMsg.classList.add('hidden');
+      searchBtn.disabled = false;
+
+      if (snapshot.empty) {
+        alert("لم يتم العثور على أي فواتير بهذا الرقم.");
+        document.getElementById('customer-result').classList.add('hidden');
+        return;
+      }
+
+      let totalAmount = 0, totalPoints = 0, custName = "";
+      const tbody = document.getElementById('invoices-list');
+      tbody.innerHTML = '';
+
+      snapshot.forEach(doc => {
+        const inv = doc.data();
+        custName = inv.name;
+        totalAmount += inv.amount;
+        totalPoints += inv.points;
+        tbody.innerHTML += `<tr><td>#${inv.docId}</td><td>${inv.amount.toLocaleString()} د.ل</td><td>${inv.points}</td></tr>`;
+      });
+
+      document.getElementById('res-name').innerText = "الزبون: " + custName;
+      document.getElementById('res-total-amount').innerText = totalAmount.toLocaleString();
+      document.getElementById('res-total-points').innerText = totalPoints.toLocaleString();
+      document.getElementById('res-prize').innerText = getPrizeByAmount(totalAmount);
+      document.getElementById('customer-result').classList.remove('hidden');
+
+    } catch (err) {
+      statusMsg.classList.add('hidden');
+      searchBtn.disabled = false;
+      alert("❌ حدث خطأ في الاتصال بالشبكة.");
     }
-
-    let totalAmount = 0, totalPoints = 0;
-    const tbody = document.getElementById('invoices-list');
-    tbody.innerHTML = '';
-
-    userInvoices.forEach(inv => {
-      totalAmount += inv.amount;
-      totalPoints += inv.points;
-      tbody.innerHTML += `<tr><td>#${inv.docId}</td><td>${inv.amount.toLocaleString()} د.ل</td><td>${inv.points}</td></tr>`;
-    });
-
-    document.getElementById('res-name').innerText = "الزبون: " + userInvoices[0].name;
-    document.getElementById('res-total-amount').innerText = totalAmount.toLocaleString();
-    document.getElementById('res-total-points').innerText = totalPoints.toLocaleString();
-    document.getElementById('res-prize').innerText = getPrizeByAmount(totalAmount);
-    document.getElementById('customer-result').classList.remove('hidden');
   }
 
   async function claimPrize() {
     if (!currentActivePhone) return;
     if (confirm("هل أنت تأكد من تسليم الجائزة؟ سيتم حذف سجل الفواتير وتصفير النقاط.")) {
-      let invoices = getLocalInvoices();
-      const updated = invoices.filter(inv => cleanPhone(inv.phone) !== currentActivePhone);
-      saveLocalInvoices(updated);
+      const snapshot = await db.collection("invoices").where("phone", "==", currentActivePhone).get();
+      const batch = db.batch();
+      snapshot.forEach(doc => { batch.delete(doc.ref); });
+      await batch.commit();
 
       alert("🎉 تم سحب الجائزة وتصفير النقاط بنجاح!");
       document.getElementById('customer-result').classList.add('hidden');
