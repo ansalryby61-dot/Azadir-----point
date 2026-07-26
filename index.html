@@ -199,9 +199,8 @@
 </div>
 
 <script>
-  // رابط وقيم تخزين سحابية جاهزة ومدمجة بالكامل 100%
-  const API_URL = "https://api.jsonbin.io/v3/b/66d3a8bce4101579ceb32111";
-  const MASTER_KEY = "$2a$10$89XInmG2B4aE.4a/S/N4ue0/aJzXvKzO9p1M3P0E1o9L3.I2XbM6a";
+  // رابط سيرفر سحابي مخصص ومباشر لشركة أزادير
+  const DB_ENDPOINT = "https://kvdb.io/K99fS9kLz5y3G7N8aX1Z2W/azadir_db";
 
   let currentActivePhone = "";
 
@@ -252,11 +251,9 @@
 
   async function getInvoices() {
     try {
-      const res = await fetch(API_URL + "/latest", {
-        headers: { "X-Master-Key": MASTER_KEY }
-      });
-      const data = await res.json();
-      return data.record || [];
+      const res = await fetch(DB_ENDPOINT);
+      if (!res.ok) return [];
+      return await res.json();
     } catch (e) {
       return [];
     }
@@ -264,15 +261,12 @@
 
   async function updateInvoices(invoices) {
     try {
-      await fetch(API_URL, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Master-Key": MASTER_KEY
-        },
+      const res = await fetch(DB_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(invoices)
       });
-      return true;
+      return res.ok;
     } catch (e) {
       return false;
     }
@@ -281,7 +275,7 @@
   async function saveInvoice(e) {
     e.preventDefault();
     const btn = document.getElementById('save-btn');
-    btn.innerText = "جاري الحفظ... ⏳";
+    btn.innerText = "جاري الحفظ أونلاين... ⏳";
     btn.disabled = true;
 
     const docId = document.getElementById('doc-id').value.trim();
@@ -306,7 +300,7 @@
       alert("✅ تم حفظ الفاتورة أونلاين بنجاح!");
       document.getElementById('invoice-form').reset();
     } else {
-      alert("❌ حدث خطأ في الشبكة، حاول مجدداً.");
+      alert("❌ حدث خطأ في الاتصال بالسيرفر. يرجى المحاولة مرة أخرى.");
     }
 
     btn.innerText = "حفظ الفاتورة أونلاين";
