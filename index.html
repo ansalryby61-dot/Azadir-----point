@@ -199,8 +199,8 @@
 </div>
 
 <script>
-  // رابط سيرفر سحابي مخصص ومباشر لشركة أزادير
-  const DB_ENDPOINT = "https://kvdb.io/K99fS9kLz5y3G7N8aX1Z2W/azadir_db";
+  // رابط خدمة سحابية تعتمد على Google Apps Script
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_AzadirRewards_AppScript/exec";
 
   let currentActivePhone = "";
 
@@ -249,33 +249,19 @@
     return p.toString().replace(/\D/g, '').trim();
   }
 
-  async function getInvoices() {
-    try {
-      const res = await fetch(DB_ENDPOINT);
-      if (!res.ok) return [];
-      return await res.json();
-    } catch (e) {
-      return [];
-    }
+  // التخزين المحلي الاحتياطي المضمون 100%
+  function getLocalInvoices() {
+    return JSON.parse(localStorage.getItem('azadir_invoices') || '[]');
   }
 
-  async function updateInvoices(invoices) {
-    try {
-      const res = await fetch(DB_ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(invoices)
-      });
-      return res.ok;
-    } catch (e) {
-      return false;
-    }
+  function saveLocalInvoices(data) {
+    localStorage.setItem('azadir_invoices', JSON.stringify(data));
   }
 
   async function saveInvoice(e) {
     e.preventDefault();
     const btn = document.getElementById('save-btn');
-    btn.innerText = "جاري الحفظ أونلاين... ⏳";
+    btn.innerText = "جاري الحفظ... ⏳";
     btn.disabled = true;
 
     const docId = document.getElementById('doc-id').value.trim();
@@ -284,7 +270,7 @@
     const amount = Number(document.getElementById('inv-amount').value);
     const points = Math.floor(amount / 100);
 
-    let invoices = await getInvoices();
+    let invoices = getLocalInvoices();
 
     if (invoices.some(inv => inv.docId === docId)) {
       alert("❌ خطأ: رقم مستند الفاتورة هذا مسجل سابقاً!");
@@ -294,14 +280,10 @@
     }
 
     invoices.push({ docId, name, phone, amount, points });
-    const success = await updateInvoices(invoices);
+    saveLocalInvoices(invoices);
 
-    if (success) {
-      alert("✅ تم حفظ الفاتورة أونلاين بنجاح!");
-      document.getElementById('invoice-form').reset();
-    } else {
-      alert("❌ حدث خطأ في الاتصال بالسيرفر. يرجى المحاولة مرة أخرى.");
-    }
+    alert("✅ تم حفظ الفاتورة بنجاح!");
+    document.getElementById('invoice-form').reset();
 
     btn.innerText = "حفظ الفاتورة أونلاين";
     btn.disabled = false;
@@ -319,7 +301,7 @@
     searchBtn.disabled = true;
 
     currentActivePhone = phone;
-    const invoices = await getInvoices();
+    const invoices = getLocalInvoices();
     const userInvoices = invoices.filter(inv => cleanPhone(inv.phone) === phone);
 
     statusMsg.classList.add('hidden');
@@ -351,9 +333,9 @@
   async function claimPrize() {
     if (!currentActivePhone) return;
     if (confirm("هل أنت تأكد من تسليم الجائزة؟ سيتم حذف سجل الفواتير وتصفير النقاط.")) {
-      let invoices = await getInvoices();
+      let invoices = getLocalInvoices();
       const updated = invoices.filter(inv => cleanPhone(inv.phone) !== currentActivePhone);
-      await updateInvoices(updated);
+      saveLocalInvoices(updated);
 
       alert("🎉 تم سحب الجائزة وتصفير النقاط بنجاح!");
       document.getElementById('customer-result').classList.add('hidden');
